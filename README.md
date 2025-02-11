@@ -9,7 +9,8 @@ A list of components required for the project:
 | Servo SG90           | 1        |
 | LDR sensor          | 2        |
 | 10k Resistor        | 2        |
+| Arduino Uno R3      | 1        |
 
 ## Circuit Diagram
 
-![Circuit Diagram ](../automovesolarpanel/CircuitDiagram.png)
+![Circuit Diagram ]( /solar_tracking/CircuitDiagram.png)
