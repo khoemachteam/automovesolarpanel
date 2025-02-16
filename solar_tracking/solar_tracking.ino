@@ -8,13 +8,21 @@
 #define LDR1 A0
 #define LDR2 A1
 // Define the servo pin 
-#define servoPin 11 
+#define servoPin 2
 //Define the error value. You can change it as you like
-#define error 10
+#define error 60
 //Starting point of the servo motor
 int Spoint =  90;
 //Create an object for the servo motor
 Servo servo;
+
+int averageRead(int pin){
+  long long sum = 0;
+  for(int i = 0; i<100; i++){
+    sum += analogRead(pin);
+  }
+  return int (sum/100);
+}
 
 void setup() {
   Serial.begin(9600);
@@ -28,9 +36,9 @@ void setup() {
 
 void loop() {
 //Get the LDR sensor value
-  int ldr1 = analogRead(LDR1);
+  int ldr1 = averageRead(LDR1);
 //Get the LDR sensor value
-  int ldr2 = analogRead(LDR2);
+  int ldr2 = averageRead(LDR2);
 
 // Display LDRs 
   Serial.print("LDR 1 value : ");
@@ -46,17 +54,17 @@ void loop() {
   if ((value1 <= error) || (value2 <= error)) {
 
   } else {
-    if (ldr1 > ldr2 && Spoint > 0) {
-      Spoint = --Spoint;
+    if (ldr1 > ldr2 && Spoint > 40) {
+      Spoint = Spoint+2;
     }
-    if (ldr1 < ldr2 && Spoint < 180 ) {
-      Spoint = ++Spoint;
+    if (ldr1 < ldr2 && Spoint < 140 ) {
+      Spoint = Spoint-2;
     }
+    //Write values on the servo motor
+    servo.write(Spoint);
+    Serial.println("Moved");
   }
-
-//Write values on the servo motor
-  servo.write(Spoint);
   Serial.println(Spoint);
 
-  delay(100);
+  delay(500);
 }
