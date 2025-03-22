@@ -1,70 +1,54 @@
-/*Solar tracking system
-   Home Page
-*/
-
-//Include the servo motor library
 #include <Servo.h>
-//Define the LDR sensor pins
+
 #define LDR1 A0
 #define LDR2 A1
-// Define the servo pin 
 #define servoPin 2
-//Define the error value. You can change it as you like
-#define error 60
-//Starting point of the servo motor
-int Spoint =  90;
-//Create an object for the servo motor
+#define ERROR 30  // Acceptable difference
+#define MIN_ANGLE 40
+#define MAX_ANGLE 140
+#define LDR_OFFSET -40  // Calibration offset (adjust as needed)
+
+int Spoint = 90;  // Initial servo position
 Servo servo;
 
-int averageRead(int pin){
-  long long sum = 0;
-  for(int i = 0; i<100; i++){
+int averageRead(int pin) {
+  long sum = 0;
+  for (int i = 0; i < 20; i++) {  // Reduced to 20 for better speed
     sum += analogRead(pin);
   }
-  return int (sum/100);
+  return sum / 20;
 }
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Begin programing !");
-//Include servo motor PWM pin
+  Serial.println("Starting Program!");
+
   servo.attach(servoPin);
-//Set the starting point of the servo
   servo.write(Spoint);
   delay(1000);
 }
 
 void loop() {
-//Get the LDR sensor value
   int ldr1 = averageRead(LDR1);
-//Get the LDR sensor value
-  int ldr2 = averageRead(LDR2);
+  int ldr2 = averageRead(LDR2) + LDR_OFFSET;  // Apply offset
 
-// Display LDRs 
-  Serial.print("LDR 1 value : ");
+  Serial.print("LDR 1: ");
   Serial.println(ldr1);
-  Serial.print("LDR 2 value : ");
+  Serial.print("LDR 2 (Calibrated): ");
   Serial.println(ldr2);
 
-//Get the difference of these values
-  int value1 = abs(ldr1 - ldr2);
-  int value2 = abs(ldr2 - ldr1);
+  int diff = abs(ldr1 - ldr2);
 
-//Check these values using a IF condition
-  if ((value1 <= error) || (value2 <= error)) {
+  if (diff > ERROR) {  // If difference is significant
+    if (ldr1 > ldr2 && Spoint < MAX_ANGLE) {
+      Spoint += 2;
+    } else if (ldr1 < ldr2 && Spoint > MIN_ANGLE) {
+      Spoint -= 2;
+    }
 
-  } else {
-    if (ldr1 > ldr2 && Spoint > 40) {
-      Spoint = Spoint+2;
-    }
-    if (ldr1 < ldr2 && Spoint < 140 ) {
-      Spoint = Spoint-2;
-    }
-    //Write values on the servo motor
     servo.write(Spoint);
-    Serial.println("Moved");
+    Serial.println("Servo moved to: " + String(Spoint));
   }
-  Serial.println(Spoint);
 
-  delay(500);
+  delay(200);
 }
